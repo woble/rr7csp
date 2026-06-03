@@ -1,6 +1,7 @@
 import compression from "compression";
 import express from "express";
 import morgan from "morgan";
+import { randomBytes } from "node:crypto";
 
 // Short-circuit the type-checking of the built output.
 const BUILD_PATH = "./build/server/index.js";
@@ -11,6 +12,18 @@ const app = express();
 
 app.use(compression());
 app.disable("x-powered-by");
+
+function securityMiddleware(req, res, next) {
+  const nonce = randomBytes(16).toString("hex");
+  req.nonce = nonce;
+
+  const csp = `script-src 'self' 'nonce-${nonce}'`;
+  res.setHeader("Content-Security-Policy", csp);
+
+  next();
+}
+
+app.use(securityMiddleware);
 
 if (DEVELOPMENT) {
   console.log("Starting development server");

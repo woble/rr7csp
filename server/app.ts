@@ -1,17 +1,25 @@
-import { RouterContextProvider } from "react-router";
+import { RouterContextProvider, createContext } from "react-router";
 import { createRequestHandler } from "@react-router/express";
 import express from "express";
 
-import { valueFromExpressContext } from "~/context";
+export const nonceContext = createContext<string | undefined>();
+
+declare global {
+  namespace Express {
+    interface Request {
+      nonce?: string;
+    }
+  }
+}
 
 export const app = express();
 
 app.use(
   createRequestHandler({
     build: () => import("virtual:react-router/server-build"),
-    getLoadContext() {
+    getLoadContext(req) {
       const context = new RouterContextProvider();
-      context.set(valueFromExpressContext, "Hello from Express");
+      context.set(nonceContext, req.nonce);
       return context;
     },
   }),

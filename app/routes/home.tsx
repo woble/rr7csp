@@ -1,19 +1,31 @@
-import { valueFromExpressContext } from "~/context";
-
 import type { Route } from "./+types/home";
-import { Welcome } from "../welcome/welcome";
+import { NavLink } from "react-router";
 
-export function meta({}: Route.MetaArgs) {
+export function meta({ }: Route.MetaArgs) {
   return [
     { title: "New React Router App" },
     { name: "description", content: "Welcome to React Router!" },
   ];
 }
 
-export function loader({ context }: Route.LoaderArgs) {
-  return { message: context.get(valueFromExpressContext) };
+export function loader() {
+  return { message: "Hello from loader" };
+}
+
+export async function clientLoader({ serverLoader }: Route.ClientLoaderArgs) {
+  const serverData = await serverLoader();
+  console.log('clientLoader');
+  return serverData;
 }
 
 export default function Home({ loaderData }: Route.ComponentProps) {
-  return <Welcome message={loaderData.message} />;
+  return (
+    <>
+      <NavLink to="/test">goto /test</NavLink>
+      <br />
+      <NavLink to="/redirect">goto /redirect</NavLink>
+      <br />
+      <NavLink to="/redirect" reloadDocument>goto /redirect (reload document)</NavLink>
+    </>
+  );
 }
